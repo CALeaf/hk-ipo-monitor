@@ -268,6 +268,7 @@ def score_ipo(features: dict) -> Score:
     reasons: list[str] = []
 
     # 1. Sponsor quality (including blacklist)
+    #    Rationale: 顶级投行历史首日破发率显著低于小投行；保荐人声誉 = 定价合理性 + 基石招揽能力
     sponsor = features.get("sponsor") or ""
     if sponsor:
         bads = _any_match(sponsor, BAD_SPONSORS)
@@ -275,28 +276,28 @@ def score_ipo(features: dict) -> Score:
         mids = _any_match(sponsor, MID_SPONSORS)
         if bads:
             total -= 3
-            reasons.append(f"🔴 黑名单保荐: {', '.join(bads[:2])} (-3)")
+            reasons.append(f"🔴 保荐人 <b>-3</b> · 黑名单: {', '.join(bads[:2])}（历史破发率高）")
         elif tops:
             total += 2
-            reasons.append(f"✅ 顶级保荐: {', '.join(tops[:3])} (+2)")
+            reasons.append(f"✅ 保荐人 <b>+2</b> · 顶级投行 {', '.join(tops[:3])}（定价合理、基石强）")
         elif mids:
             total += 1
-            reasons.append(f"🟡 中档保荐: {', '.join(mids[:3])} (+1)")
+            reasons.append(f"🟡 保荐人 <b>+1</b> · 中档 {', '.join(mids[:3])}")
         else:
-            reasons.append(f"⚪ 保荐: {sponsor[:40]} (0)")
+            reasons.append(f"⚪ 保荐人 <b>0</b> · {sponsor[:40]}（小投行）")
 
-    # 2. Cornerstone lockup ratio (the more locked, the less day-1 sell pressure)
+    # 2. Cornerstone lockup ratio — the more locked, the less day-1 sell pressure
     cs_ratio = features.get("cornerstone_ratio")
     if cs_ratio is not None:
         if cs_ratio >= 0.60:
             total += 2
-            reasons.append(f"✅ 基石锁仓 {cs_ratio:.0%} (+2)")
+            reasons.append(f"✅ 基石锁仓 {cs_ratio:.0%} <b>+2</b> · >60% 首日流通盘极小，砸盘压力低")
         elif cs_ratio >= 0.40:
             total += 1
-            reasons.append(f"🟡 基石锁仓 {cs_ratio:.0%} (+1)")
+            reasons.append(f"🟡 基石锁仓 {cs_ratio:.0%} <b>+1</b>")
         elif cs_ratio < 0.20:
             total -= 1
-            reasons.append(f"❌ 基石锁仓仅 {cs_ratio:.0%} (-1)")
+            reasons.append(f"❌ 基石锁仓 {cs_ratio:.0%} <b>-1</b> · <20% 机构背书不足")
 
     # 3. Cornerstone quality
     cs_names = features.get("cornerstone_names") or ""
@@ -304,29 +305,27 @@ def score_ipo(features: dict) -> Score:
         top_cs = _any_match(cs_names, TOP_CORNERSTONES)
         if top_cs:
             total += 2
-            reasons.append(f"✅ 顶级基石: {', '.join(top_cs[:3])} (+2)")
+            reasons.append(f"✅ 顶级基石 <b>+2</b> · {', '.join(top_cs[:3])}（全球主权/顶流资本认可）")
 
-    # 4. Public oversubscription — note the 15–50x "dead zone"
-    # Logic: >100x → huge retail demand absorbs the 30% callback supply;
-    # 15–50x → triggers max callback but insufficient hype → 踩踏区间;
-    # <15x → no callback, float stays with institutions → controllable.
+    # 4. Public oversubscription — the 15–50x "dead zone"
+    #    >100x 热度吸收回拨; 15-50x 触发回拨但散户承接不足 → 踩踏; <5x 冷门但机构可控盘
     os_ratio = features.get("oversubscription_public")
     if os_ratio is not None:
         if os_ratio >= 100:
             total += 4
-            reasons.append(f"🔥 公开超购 {os_ratio:.0f}x >=100x (+4)")
+            reasons.append(f"🔥 公开超购 {os_ratio:.0f}x <b>+4</b> · >100x 大热，回拨后散户承接力足，抛压低")
         elif os_ratio >= 50:
             total += 2
-            reasons.append(f"✅ 公开超购 {os_ratio:.0f}x (+2)")
+            reasons.append(f"✅ 公开超购 {os_ratio:.0f}x <b>+2</b>")
         elif os_ratio >= 15:
             total -= 3
-            reasons.append(f"⚠️ 公开超购 {os_ratio:.0f}x (15–50x 踩踏区间) (-3)")
+            reasons.append(f"⚠️ 公开超购 {os_ratio:.0f}x <b>-3</b> · <b>15-50x 踩踏区间</b>（30% 回拨 + 散户互抛）")
         elif os_ratio >= 5:
             total += 1
-            reasons.append(f"🟡 公开超购 {os_ratio:.1f}x (无回拨但有热度) (+1)")
+            reasons.append(f"🟡 公开超购 {os_ratio:.1f}x <b>+1</b> · 不触发回拨但有热度")
         else:
             total -= 2
-            reasons.append(f"❌ 公开超购 {os_ratio:.1f}x <5x，冷门且无庄家 (-2)")
+            reasons.append(f"❌ 公开超购 {os_ratio:.1f}x <b>-2</b> · <5x 冷门无庄家")
 
     # 5. Effective float = 1 - cornerstone_ratio - intl_placing_ratio
     intl = features.get("intl_placing_ratio")
@@ -334,19 +333,19 @@ def score_ipo(features: dict) -> Score:
         float_ratio = max(0.0, 1.0 - cs_ratio - intl)
         if float_ratio < 0.15:
             total += 1
-            reasons.append(f"✅ 有效流通盘 {float_ratio:.0%} 极紧 (+1)")
+            reasons.append(f"✅ 有效流通盘 {float_ratio:.0%} <b>+1</b> · <15% 筹码极紧，易拉升")
         elif float_ratio > 0.50:
             total -= 1
-            reasons.append(f"⚠️ 有效流通盘 {float_ratio:.0%}，抛压较大 (-1)")
+            reasons.append(f"⚠️ 有效流通盘 {float_ratio:.0%} <b>-1</b> · >50% 抛压大")
 
     # 6. Issue price position
     pos = features.get("issue_price_position")
     if pos == "low":
         total += 1
-        reasons.append("✅ 下限定价 (+1)")
+        reasons.append("✅ 下限定价 <b>+1</b> · 承销团体对销售缺乏信心的反面解读：估值有安全垫")
     elif pos == "high":
         total -= 1
-        reasons.append("⚠️ 上限定价 (-1)")
+        reasons.append("⚠️ 上限定价 <b>-1</b> · 估值顶格，上市后回调空间大")
 
     # 7. Market cap bucket
     mc = features.get("market_cap_hkd")
@@ -354,12 +353,12 @@ def score_ipo(features: dict) -> Score:
         b = mc / 1e8
         if 50 <= b <= 500:
             total += 1
-            reasons.append(f"✅ 发行市值 {b:.0f} 亿，甜点区间 (+1)")
+            reasons.append(f"✅ 市值 {b:.0f} 亿 <b>+1</b> · 50-500 亿甜点区间，资金关注度最高")
         elif b < 10:
             total -= 1
-            reasons.append(f"❌ 发行市值 {b:.1f} 亿，偏小 (-1)")
+            reasons.append(f"❌ 市值 {b:.1f} 亿 <b>-1</b> · 偏小，机构不够兴趣")
         elif b > 1000:
-            reasons.append(f"⚪ 发行市值 {b:.0f} 亿，巨无霸 (0)")
+            reasons.append(f"⚪ 市值 {b:.0f} 亿 <b>0</b> · 巨无霸资金不够推动")
 
     # 8. Industry narrative — 2 tiers + cold list
     ind = features.get("industry") or ""
@@ -369,31 +368,31 @@ def score_ipo(features: dict) -> Score:
         cold = _any_match(ind, COLD_INDUSTRIES)
         if t1:
             total += 2
-            reasons.append(f"🔥 顶级赛道: {ind} ({', '.join(t1[:2])}) (+2)")
+            reasons.append(f"🔥 Tier1 赛道 <b>+2</b> · {ind} 含 {', '.join(t1[:2])}（当前市场主线）")
         elif t2:
             total += 1
-            reasons.append(f"✅ 热门赛道: {ind} (+1)")
+            reasons.append(f"✅ Tier2 赛道 <b>+1</b> · {ind}（有资金但不是最热）")
         elif cold:
             total -= 2
-            reasons.append(f"❌ 冷门赛道: {ind} (-2)")
+            reasons.append(f"❌ 冷门赛道 <b>-2</b> · {ind}（传统消费/制造无叙事）")
 
-    # 9. Mechanism B
+    # 9. Mechanism B (2025-08 新规)
     if features.get("mechanism_b"):
         total += 1
-        reasons.append("✅ 采用机制B发行 (+1)")
+        reasons.append("✅ 机制 B <b>+1</b> · 2025-08 新规，发行人锁国配份额，公开发售筹码更紧")
 
     # 10. A+H discount (港股定价 vs A股当前价)
     ahd = features.get("ah_discount")
     if ahd is not None:
         if ahd >= 0.30:
             total += 2
-            reasons.append(f"✅ A+H 折让 {ahd:.0%}，安全垫厚 (+2)")
+            reasons.append(f"✅ A+H 折让 {ahd:.0%} <b>+2</b> · 对 A 股折 >30%，安全垫厚")
         elif ahd >= 0.15:
             total += 1
-            reasons.append(f"🟡 A+H 折让 {ahd:.0%} (+1)")
+            reasons.append(f"🟡 A+H 折让 {ahd:.0%} <b>+1</b>")
         elif ahd < 0:
             total -= 1
-            reasons.append(f"⚠️ 港股对 A 股溢价 {-ahd:.0%} (-1)")
+            reasons.append(f"⚠️ A+H 溢价 {-ahd:.0%} <b>-1</b> · 港股比 A 股贵，套利资金压制")
 
     rec = _recommendation(total)
     alloc = suggest_allocation(rec)

@@ -49,6 +49,19 @@ SELF_CHECK_H_SHARE = (
     "  · <b>A+H 折让</b>（看当日 A 股收盘价）—— 折让 >30% 安全垫厚；港股溢价建议放弃\n"
 )
 
+# Compact rubric appended once per message — lets user learn the framework
+# without needing to open the README.
+SCORING_RUBRIC = (
+    "<b>📏 评分手册（阈值 ≥6 乙头 / 3-5 甲尾 / 0-2 观望 / ≤-1 放弃）</b>\n"
+    "  · 保荐人: 顶投 +2 / 中档 +1 / 黑名单 -3\n"
+    "  · 基石: 顶级机构名单 +2 · 锁仓 >60% +2 / 40-60% +1 / <20% -1\n"
+    "  · 有效流通盘 (1-基石-国配): <15% +1 / >50% -1\n"
+    "  · 公开超购: >100x +4 / 50-100x +2 / <b>15-50x -3（踩踏区间）</b> / 5-15x +1 / <5x -2\n"
+    "  · 赛道: Tier1(AI/大模型/半导体/创新药/储能) +2 / Tier2(软件/生物/新能源) +1 / 冷门(消费/地产/制造) -2\n"
+    "  · 市值 50-500 亿 +1 / <10 亿 -1 · 定价: 下限 +1 / 上限 -1\n"
+    "  · A+H 折让 >30% +2 / 15-30% +1 / 港股溢价 -1 · 机制 B +1\n"
+)
+
 
 def _is_h_share(ipo: fetcher.IPO) -> bool:
     """Detect dual-listed A+H stock from the IPO name suffix."""
@@ -102,6 +115,9 @@ def format_message(ipo: fetcher.IPO, score: scorer.Score) -> str:
     lines.append(SELF_CHECK_ALWAYS.rstrip())
     if _is_h_share(ipo):
         lines.append(SELF_CHECK_H_SHARE.rstrip())
+
+    lines.append("")
+    lines.append(SCORING_RUBRIC.rstrip())
 
     lines.append(f"\n详情: {ipo.detail_url}")
     return "\n".join(lines)

@@ -103,8 +103,9 @@ TIER1_INDUSTRIES = [
 TIER2_INDUSTRIES = [
     "半导体", "芯片", "硬件",
     "硬科技", "先进", "软件", "SaaS",
-    "生物科技", "biotech", "生物", "医疗器械", "制药",
-    "新能源", "电动",
+    "生物科技", "biotech", "生物", "医疗器械", "医疗保健", "医药", "制药",
+    "新能源", "电动", "锂电",
+    "航天", "卫星",
 ]
 
 # Cold (-2) — sectors with weak demand / structural破发

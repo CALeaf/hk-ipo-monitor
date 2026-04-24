@@ -41,13 +41,20 @@ def build_features(ipo: fetcher.IPO) -> dict:
     }
 
 
-SELF_CHECK = (
-    "\n<b>📋 自行核对（公开页抓不稳的动态信号）：</b>\n"
+SELF_CHECK_ALWAYS = (
     "  · <b>公开超购倍数</b>（富途/捷利）—— >100x 可冲乙头；<b>15-50x 是踩踏区间，建议避开</b>\n"
-    "  · <b>基石锁仓比例</b>（招股书 / 捷利港信）—— >60% 抛压小；基石若含 淡马锡/GIC/阿布扎比/高瓴 再加一档\n"
-    "  · <b>A+H 折让</b>（若是 H 股，看当日 A 股收盘）—— 折让 >30% 安全垫厚\n"
-    "  · <b>暗盘表现</b>（上市前晚 富途/辉立）—— 跌破招股价直接放弃；涨 >20% 可追\n"
+    "  · <b>基石锁仓比例</b>（招股书 / 捷利港信）—— >60% 抛压小；顶级名单（淡马锡/GIC/阿布扎比/高瓴）再加一档\n"
 )
+SELF_CHECK_H_SHARE = (
+    "  · <b>A+H 折让</b>（看当日 A 股收盘价）—— 折让 >30% 安全垫厚；港股溢价建议放弃\n"
+)
+
+
+def _is_h_share(ipo: fetcher.IPO) -> bool:
+    """Detect dual-listed A+H stock from the IPO name suffix."""
+    name = (ipo.name or "").upper()
+    # AAStocks uses "─H" or "- H shares"; HKEX NLR uses "- H shares"
+    return "─H" in ipo.name or "- H SHARES" in name or "H SHARES" in name
 
 
 def format_message(ipo: fetcher.IPO, score: scorer.Score) -> str:
@@ -82,7 +89,11 @@ def format_message(ipo: fetcher.IPO, score: scorer.Score) -> str:
     for r in score.reasons:
         lines.append(f"  {r}")
 
-    lines.append(SELF_CHECK.rstrip())
+    lines.append("\n<b>📋 自行核对：</b>")
+    lines.append(SELF_CHECK_ALWAYS.rstrip())
+    if _is_h_share(ipo):
+        lines.append(SELF_CHECK_H_SHARE.rstrip())
+
     lines.append(f"\n详情: {ipo.detail_url}")
     return "\n".join(lines)
 

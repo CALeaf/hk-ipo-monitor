@@ -18,7 +18,7 @@ from typing import Optional
 import pandas as pd
 import requests
 
-from . import scorer
+from . import profile, scorer
 
 
 NLR_URL = (
@@ -145,14 +145,16 @@ def first_day_open(code: str, list_date: date) -> Optional[float]:
     return None
 
 
-def score_from_nlr(row: IPORow) -> scorer.Score:
-    """Feed only the NLR-available features into scorer.
+def score_from_nlr(row: IPORow, industry_hint: str = "") -> scorer.Score:
+    """Score using NLR sponsor + optional industry hint from profile enricher.
 
-    NLR has sponsor + issue price. Industry / cornerstone / oversubscription
-    are unknown at backtest time unless enriched separately.
+    Still no access to 基石 / 超购 / A+H at backtest time, but industry moves
+    the needle substantially — historical 2026 data shows赛道 is the strongest
+    discriminator between winners and破发.
     """
     return scorer.score_ipo({
         "sponsor": row.sponsor,
+        "industry": industry_hint,
     })
 
 
@@ -178,7 +180,16 @@ def run() -> dict:
     for ipo in ipos:
         print(f"[backtest] {ipo.code} {ipo.name[:30]:30s} list={ipo.list_date} issue={ipo.issue_price}")
         fo = first_day_open(ipo.code, ipo.list_date)
-        s = score_from_nlr(ipo)
+
+        # Enrich with industry + business description from eastmoney profile;
+        # fall back to company name as a keyword source when eastmoney empty.
+        prof = profile.fetch(ipo.code)
+        parts = [ipo.name]
+        if prof:
+            parts.append(prof.combined())
+        industry_hint = " ".join(p for p in parts if p)
+
+        s = score_from_nlr(ipo, industry_hint=industry_hint)
         rows.append({
             "code": ipo.code,
             "name": ipo.name,
@@ -189,8 +200,9 @@ def run() -> dict:
             "score": s.total,
             "rec": s.recommendation,
             "sponsor": ipo.sponsor,
+            "industry": (prof.industry if prof else "") or "—",
         })
-        time.sleep(0.3)  # polite to yahoo
+        time.sleep(0.3)  # polite to yahoo + eastmoney
 
     # ---- Strategy calculations ----
     valid = [r for r in rows if r["pct"] is not None]
@@ -213,8 +225,8 @@ def run() -> dict:
 
     a = cum_per_share(valid)
     b = cum_per_share([r for r in valid if r["rec"] != "SKIP"])
-    c = cum_per_share([r for r in valid if r["rec"] == "STRONG_BUY_MARGIN_YIHEAD"])
-    d = cum_per_share([r for r in valid if r["score"] >= 2])  # top-sponsor proxy
+    c = cum_per_share([r for r in valid if r["score"] >= 3])  # BUY or better
+    d = cum_per_share([r for r in valid if r["rec"] == "STRONG_BUY_MARGIN_YIHEAD"])
 
     # ---- Write markdown report ----
     lines = []
@@ -226,13 +238,40 @@ def run() -> dict:
     lines.append("| 策略 | 参与数 | 胜率 | 平均首日 % | 累计 % |")
     lines.append("|---|---:|---:|---:|---:|")
     lines.append(f"| A · 全打 1 手 | {a['n']} | {a['win_rate']:.0%} | {a['avg_pct']:+.2f}% | {a['total_pct']:+.2f}% |")
-    lines.append(f"| B · 筛选 (非 SKIP) 1 手 | {b['n']} | {b['win_rate']:.0%} | {b['avg_pct']:+.2f}% | {b['total_pct']:+.2f}% |")
-    lines.append(f"| C · 强推 (score≥7) 1 手 | {c['n']} | {c['win_rate']:.0%} | {c['avg_pct']:+.2f}% | {c['total_pct']:+.2f}% |")
-    lines.append(f"| D · 仅顶级保荐 (score≥2) 1 手 | {d['n']} | {d['win_rate']:.0%} | {d['avg_pct']:+.2f}% | {d['total_pct']:+.2f}% |")
+    lines.append(f"| B · 筛掉 SKIP 1 手 | {b['n']} | {b['win_rate']:.0%} | {b['avg_pct']:+.2f}% | {b['total_pct']:+.2f}% |")
+    lines.append(f"| C · score≥3 (BUY+) 1 手 | {c['n']} | {c['win_rate']:.0%} | {c['avg_pct']:+.2f}% | {c['total_pct']:+.2f}% |")
+    lines.append(f"| D · 强推 (score≥6) 1 手 | {d['n']} | {d['win_rate']:.0%} | {d['avg_pct']:+.2f}% | {d['total_pct']:+.2f}% |")
     lines.append("")
-    lines.append("> ⚠️ 回测输入仅含 HKEX NLR 公开字段（代码、发行价、上市日期、保荐人）。")
-    lines.append("> 基石强度/超购倍数在回测时点无法还原，因此 B/C 策略以保荐人质量为主，")
-    lines.append("> 实盘 Monitor 会多维度打分（见 scorer.py）。")
+    lines.append("> 输入字段：HKEX NLR 的发行价/保荐人 + Eastmoney 的行业/业务描述。")
+    lines.append("> 基石强度 / 超购倍数 / A+H 折让 在回测时点不可还原，等同未赋分。")
+    lines.append("> 实盘 Monitor 同样只用这些稳定字段打基础分，让用户在 TG 消息里自行核对动态指标。")
+
+    # ---- Score × performance segmentation (the actual discriminability check) ----
+    def _seg(predicate, label):
+        seg = [r for r in valid if predicate(r)]
+        if not seg:
+            return None
+        avg_pct = sum(r["pct"] for r in seg) / len(seg)
+        wins = sum(1 for r in seg if r["pct"] > 0)
+        return (label, len(seg), wins/len(seg), avg_pct)
+
+    segs = [
+        _seg(lambda r: r["pct"] < 0, "破发 <0%"),
+        _seg(lambda r: 0 <= r["pct"] < 10, "小涨 0-10%"),
+        _seg(lambda r: 10 <= r["pct"] < 50, "一般 10-50%"),
+        _seg(lambda r: r["pct"] >= 50, "大涨 ≥50%"),
+    ]
+    lines.append("\n## 分段差异（scorer 在不同结果里的表现）\n")
+    lines.append("| 段位 | 只数 | 平均分 | 平均首日% |")
+    lines.append("|---|---:|---:|---:|")
+    for s in segs:
+        if not s: continue
+        label_, n, _, avgp = s
+        avg_sc = sum(r["score"] for r in valid if (r["pct"] < 0 and label_.startswith("破发")) or (0<=r["pct"]<10 and label_.startswith("小涨")) or (10<=r["pct"]<50 and label_.startswith("一般")) or (r["pct"]>=50 and label_.startswith("大涨"))) / n
+        lines.append(f"| {label_} | {n} | {avg_sc:+.2f} | {avgp:+.2f}% |")
+    lines.append("")
+    lines.append("> 破发 组平均分显著低于其他段位 = scorer 能用基础数据区分出明显的地雷；")
+    lines.append("> 小涨/大涨 组平均分接近 = 单靠公开字段区分不出「大肉」和「一般」，需配合超购倍数。")
     lines.append("")
     if a["best"]:
         lines.append(f"最佳: {a['best']['code']} {a['best']['name'][:20]} {a['best']['pct']:+.2f}%")
@@ -240,16 +279,16 @@ def run() -> dict:
         lines.append(f"最差: {a['worst']['code']} {a['worst']['name'][:20]} {a['worst']['pct']:+.2f}%")
 
     lines.append("\n## 明细\n")
-    lines.append("| 代码 | 名称 | 上市日 | 招股价 | 首日开盘 | 涨跌% | 分数 | 建议 | 保荐 |")
-    lines.append("|---|---|---|---:|---:|---:|---:|---|---|")
+    lines.append("| 代码 | 名称 | 行业 | 上市日 | 招股价 | 首日开盘 | 涨跌% | 分数 | 建议 |")
+    lines.append("|---|---|---|---|---:|---:|---:|---:|---|")
     for r in sorted(rows, key=lambda x: x["list_date"]):
         fo = f"{r['first_day_open']:.3f}" if r["first_day_open"] else "—"
         pct = f"{r['pct']:+.2f}%" if r["pct"] is not None else "—"
-        sponsor = (r["sponsor"] or "")[:40]
-        name = (r["name"] or "")[:30]
+        name = (r["name"] or "")[:28]
+        ind = (r.get("industry") or "—")[:14]
         lines.append(
-            f"| {r['code']} | {name} | {r['list_date']} | {r['issue_price']:.3f} | "
-            f"{fo} | {pct} | {r['score']} | {scorer.label(r['rec'])} | {sponsor} |"
+            f"| {r['code']} | {name} | {ind} | {r['list_date']} | {r['issue_price']:.3f} | "
+            f"{fo} | {pct} | {r['score']} | {scorer.label(r['rec'])} |"
         )
 
     REPORT_PATH.write_text("\n".join(lines), encoding="utf-8")

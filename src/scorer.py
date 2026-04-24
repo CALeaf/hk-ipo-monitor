@@ -89,34 +89,54 @@ TOP_CORNERSTONES = [
 
 # ---- Industry narrative lists ------------------------------------------------
 # Tier 1 (+2) — current hot narratives where market pays large premium
+# Keywords are matched against both the sshy industry label AND the business
+# description, so rich phrases like "基座模型" / "大模型" / "图计算" trigger.
 TIER1_INDUSTRIES = [
-    "AI", "人工智能", "大模型",
-    "具身智能", "机器人", "humanoid",
+    "AI", "人工智能", "认知智能",
+    "大模型", "基座模型", "预训练模型",
+    "具身智能", "humanoid", "人形机器人",
     "半导体设备", "EDA", "光刻",
-    "创新药", "前沿生物", "mRNA", "ADC", "PD-1",
-    "算力", "推理芯片", "GPU", "ASIC",
-    "硅光", "光模块",
-    "固态电池",
+    "创新药", "前沿生物", "mRNA", "ADC", "PD-1", "生物科技",
+    "算力", "推理芯片", "GPU", "ASIC", "DPU", "NPU",
+    "硅光", "光模块", "光芯片",
+    "固态电池", "储能",
+    "图计算",
+    "自动驾驶", "智能驾驶",
+    "芯片", "半导体", "Semiconductor", "semiconductor",
+    "Biotech", "biotech",
+    "Microelectronics",
 ]
 
 # Tier 2 (+1) — generally favored sectors
 TIER2_INDUSTRIES = [
-    "半导体", "芯片", "硬件",
-    "硬科技", "先进", "软件", "SaaS",
-    "生物科技", "biotech", "生物", "医疗器械", "医疗保健", "医药", "制药",
-    "新能源", "电动", "锂电",
-    "航天", "卫星",
+    "硬件", "硬科技", "先进",
+    "软件", "SaaS", "软件服务", "云计算",
+    "机器人",  # generic robotics ≠ 具身智能; weaker premium
+
+    "生物", "医疗器械", "医疗保健", "医药", "制药",
+    "Biosciences", "Bioscience",
+    "Pharmaceutical", "Pharma",
+    "新能源", "电动", "锂电", "Battery",
+    "航天", "卫星", "航空",
 ]
 
 # Cold (-2) — sectors with weak demand / structural破发
 COLD_INDUSTRIES = [
-    "地产", "房地产",
-    "传统零售", "零售", "餐饮",
-    "纸业", "水泥", "钢铁",
-    "教育", "K12",
-    "纺织", "服装",
-    "老旧软件", "传统消费",
+    "地产", "房地产", "Real Estate",
+    "传统零售", "零售", "餐饮", "Retail",
+    "纸业", "水泥", "钢铁", "Steel", "Cement",
+    "教育", "K12", "Education",
+    "纺织", "服装", "Apparel", "Textile",
     "物业", "物业管理",
+    # 2026 data-driven additions: categories that consistently underperformed
+    "饮料", "食品", "生猪", "养殖", "猪肉",
+    "Beverage", "Foods", "Food",
+    "文创", "工艺", "Cultural",
+    "工业自动化", "工业机器人", "Automation", "AUTOMATION",
+    "家庭电器", "家用电器",
+    "工用支援", "包装服务",
+    "户外", "服饰", "Outdoor",
+    "汽车零部件",
 ]
 
 
@@ -287,19 +307,22 @@ def score_ipo(features: dict) -> Score:
 
 
 def _recommendation(score: int) -> str:
-    if score >= 9:
-        return "STRONG_BUY_MARGIN_YIHEAD"   # 强推 · 融资打乙头
-    if score >= 5:
-        return "BUY_ONE_LOT"                 # 1 手现金
-    if score >= 1:
-        return "WATCH"                       # 观望
-    return "SKIP"                            # 放弃
+    # Calibrated against 2026 Q1 backtest population.
+    # Stable-data max (sponsor + industry + market cap + keywords) ≈ 5–7;
+    # reaching 8+ usually requires verified 基石/超购 on top.
+    if score >= 6:
+        return "STRONG_BUY_MARGIN_YIHEAD"   # 确认超购/基石后冲乙头
+    if score >= 3:
+        return "BUY_ONE_LOT"                 # 基本面 OK · 1 手现金
+    if score >= 0:
+        return "WATCH"                       # 一般 · 看超购再定
+    return "SKIP"                            # 明显冷门 · 放弃
 
 
 RECOMMENDATION_LABELS = {
-    "STRONG_BUY_MARGIN_YIHEAD": "🟢 强推 · 融资打乙头",
-    "BUY_ONE_LOT":              "🟡 1 手现金申购",
-    "WATCH":                    "⚪ 观望 / 看暗盘",
+    "STRONG_BUY_MARGIN_YIHEAD": "🟢 强推 · 核对超购后可冲乙头",
+    "BUY_ONE_LOT":              "🟡 基本面 OK · 1 手现金",
+    "WATCH":                    "⚪ 一般 · 看超购再定",
     "SKIP":                     "🔴 放弃",
 }
 

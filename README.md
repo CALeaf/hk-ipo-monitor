@@ -23,11 +23,61 @@ python -m src.monitor             # 正式推 TG
 python -m src.backtest            # 重跑 2026 回测 → data/backtest_2026.md
 ```
 
-## 一次性配置 Telegram
+## 🧸 傻瓜式六步走（5 分钟搞定）
 
-1. Telegram 找 **@BotFather** → `/newbot` → 记下 `TG_BOT_TOKEN`（形如 `1234:ABCxyz...`）
-2. 和自己的 bot 发一句 `hi`，然后浏览器打开 `https://api.telegram.org/bot<TOKEN>/getUpdates` → 从 JSON 里复制 `chat.id` → 作为 `TG_CHAT_ID`
-3. GitHub repo → Settings → Secrets and variables → Actions → **New repository secret** → 加 `TG_BOT_TOKEN` 和 `TG_CHAT_ID`
+不用服务器、不用 Cloudflare，全靠 GitHub Actions 白嫖。
+
+### 1️⃣ 创建 Telegram Bot
+
+- Telegram 搜 **@BotFather**（蓝色 ✓ 认证）
+- 发 `/newbot` → 按提示起名、起 username（必须 `bot` 结尾，例如 `caleaf_hkipo_bot`）
+- 复制它回复里那串 `TG_BOT_TOKEN`（形如 `1234567890:AAHxxxxxxxx`）备用
+
+### 2️⃣ 和 bot 说一句话
+
+- 点 BotFather 回复里的 bot 链接 → **Start** → 发一句 `hi`
+- （必须发，不然下一步拿不到 chat_id）
+
+### 3️⃣ 拿 Chat ID
+
+浏览器打开（`<TOKEN>` 换成第 1 步的 token）：
+
+```
+https://api.telegram.org/bot<TOKEN>/getUpdates
+```
+
+从返回的 JSON 里找 `"chat":{"id":123456789,...` — 这个数字就是 `TG_CHAT_ID`。
+
+> 看到 `{"ok":true,"result":[]}` 说明第 2 步没发消息，回去补一句 `hi`。
+
+### 4️⃣ 加 GitHub Secrets
+
+打开 `https://github.com/<你>/hk-ipo-monitor/settings/secrets/actions` → 点 **New repository secret**，加两条：
+
+| Name | Secret |
+|---|---|
+| `TG_BOT_TOKEN` | 第 1 步复制的 token |
+| `TG_CHAT_ID` | 第 3 步那串数字 |
+
+### 5️⃣ 手动触发一次验证
+
+- 打开 `https://github.com/<你>/hk-ipo-monitor/actions/workflows/monitor.yml`
+- 右上角 **Run workflow** → 分支 `main` → 绿色 Run workflow
+- 等 2-3 分钟（黄点 → 绿勾）
+- 手机 Telegram 应该会收到当前 4 只即将上市的新股推送
+
+### 6️⃣ 完事
+
+之后每天 HKT **09:00 / 17:00** 自动跑。有新股就推，没有就静默。
+
+### 🚨 常见坑
+
+| 现象 | 原因 | 解决 |
+|---|---|---|
+| Run workflow 变红 ❌ | token / chat_id 错了 | 点那次 run → 看 `Run monitor` step 日志 |
+| 绿勾 ✅ 但 TG 没收到 | chat_id 填错 / bot 被静音 | 回第 3 步重拿；检查 TG 里 bot 通知设置 |
+| 一个月后自动停 | GitHub 60 天没 activity 会禁用 cron | 每月手动 Run workflow 一次，或正常有 commit 也行 |
+| 推送延迟几分钟 | GitHub cron 峰期会延迟 | 正常现象；不要指望抢招股最后 5 分钟的热度 |
 
 ## GitHub Actions
 

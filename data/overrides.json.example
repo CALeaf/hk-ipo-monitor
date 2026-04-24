@@ -1,0 +1,20 @@
+{
+  "_comment": "Per-IPO feature overrides. Key = 5-digit HK code. Merged into scorer input at monitor time. Use this to feed oversubscription / cornerstone data you read off 富途 / 捷利 / prospectus before the auto-enrichers land.",
+  "01879": {
+    "oversubscription_public": 220,
+    "cornerstone_ratio": 0.55,
+    "cornerstone_names": "GIC, Aspex, 高瓴, 淡马锡",
+    "intl_placing_ratio": 0.85,
+    "issue_price_position": "high",
+    "mechanism_b": true
+  },
+  "02493": {
+    "oversubscription_public": 25,
+    "cornerstone_ratio": 0.32,
+    "intl_placing_ratio": 0.90
+  },
+  "06810": {
+    "oversubscription_public": 8,
+    "cornerstone_ratio": 0.20
+  }
+}

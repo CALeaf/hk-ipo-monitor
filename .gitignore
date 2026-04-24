@@ -6,5 +6,3 @@ venv/
 .env
 *.log
 .DS_Store
-# user-specific overrides for per-IPO realtime features
-data/overrides.json

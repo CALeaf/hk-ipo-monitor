@@ -1,12 +1,15 @@
-"""Orchestrator: fetch upcoming IPOs → enrich → score → push to Telegram."""
+"""Orchestrator: fetch upcoming IPOs → score on stable fields → push to Telegram.
+
+Scoring uses only data we can reliably scrape off AAStocks (sponsor, industry,
+market cap, price range). The TG message then nudges the user to personally
+verify the dynamic signals (超购 / 基石 / A+H / 暗盘) before committing.
+"""
 
 from __future__ import annotations
 
-import json
 import os
 import sys
 from datetime import datetime, timezone, timedelta
-from pathlib import Path
 
 try:
     from dotenv import load_dotenv
@@ -18,43 +21,33 @@ from . import fetcher, scorer, storage, telegram
 
 
 HKT = timezone(timedelta(hours=8))
-OVERRIDES_PATH = Path(__file__).resolve().parent.parent / "data" / "overrides.json"
 
 
-def load_overrides() -> dict:
-    """Load per-code feature overrides (oversubscription / cornerstone / A+H etc.)."""
-    if not OVERRIDES_PATH.exists():
-        return {}
-    try:
-        with OVERRIDES_PATH.open("r", encoding="utf-8") as f:
-            data = json.load(f)
-        return {k: v for k, v in data.items() if not k.startswith("_")}
-    except Exception as e:
-        print(f"[monitor] overrides load failed: {e}", file=sys.stderr)
-        return {}
+def build_features(ipo: fetcher.IPO) -> dict:
+    """Translate scraped fields into scorer input.
 
-
-def build_features(ipo: fetcher.IPO, overrides: dict | None = None) -> dict:
-    """Translate scraped fields + user overrides into scorer input.
-
-    AAStocks gives sponsor / industry / market cap / price range automatically.
-    Real-time fields (oversubscription, cornerstone, A+H discount) come from
-    data/overrides.json — the user fills them in from 富途 / 捷利 / prospectus.
+    Only fields AAStocks reliably exposes. Dynamic signals (oversubscription,
+    cornerstone, A+H discount) are left to the user to verify manually.
     """
     mc = None
     if ipo.market_cap_low and ipo.market_cap_high:
         mc = (ipo.market_cap_low + ipo.market_cap_high) / 2
 
-    feat = {
+    return {
         "sponsor": ipo.sponsor,
         "industry": ipo.industry,
         "price_range": ipo.price_range,
         "market_cap_hkd": mc,
     }
 
-    if overrides and ipo.code in overrides:
-        feat.update(overrides[ipo.code])
-    return feat
+
+SELF_CHECK = (
+    "\n<b>📋 自行核对（公开页抓不稳的动态信号）：</b>\n"
+    "  · <b>公开超购倍数</b>（富途/捷利）—— >100x 可冲乙头；<b>15-50x 是踩踏区间，建议避开</b>\n"
+    "  · <b>基石锁仓比例</b>（招股书 / 捷利港信）—— >60% 抛压小；基石若含 淡马锡/GIC/阿布扎比/高瓴 再加一档\n"
+    "  · <b>A+H 折让</b>（若是 H 股，看当日 A 股收盘）—— 折让 >30% 安全垫厚\n"
+    "  · <b>暗盘表现</b>（上市前晚 富途/辉立）—— 跌破招股价直接放弃；涨 >20% 可追\n"
+)
 
 
 def format_message(ipo: fetcher.IPO, score: scorer.Score) -> str:
@@ -85,33 +78,18 @@ def format_message(ipo: fetcher.IPO, score: scorer.Score) -> str:
         lines.append(f"保荐: {ipo.sponsor[:80]}")
 
     lines.append("")
-    lines.append(f"<b>{scorer.label(score.recommendation)}</b> (score {score.total})")
+    lines.append(f"<b>{scorer.label(score.recommendation)}</b> (基础分 {score.total})")
     for r in score.reasons:
         lines.append(f"  {r}")
-    lines.append("")
-    lines.append(f"详情: {ipo.detail_url}")
+
+    lines.append(SELF_CHECK.rstrip())
+    lines.append(f"\n详情: {ipo.detail_url}")
     return "\n".join(lines)
-
-
-def _should_resend(prev: dict, new_score: scorer.Score) -> bool:
-    """Re-send if recommendation bucket changed or score moved by ≥2 points.
-
-    This matters because 超购倍数 / 基石 become known late in the offering cycle
-    and can flip a 'WATCH' into 'STRONG_BUY' or a 'BUY' into 'SKIP'.
-    """
-    if prev.get("recommendation") != new_score.recommendation:
-        return True
-    if abs(int(prev.get("score", 0)) - int(new_score.total)) >= 2:
-        return True
-    return False
 
 
 def run(*, dry_run: bool = False) -> int:
     ipos = fetcher.list_upcoming()
     print(f"[monitor] found {len(ipos)} upcoming IPOs")
-    overrides = load_overrides()
-    if overrides:
-        print(f"[monitor] loaded overrides for {len(overrides)} codes: {list(overrides)}")
 
     state = storage.load()
     storage.prune_stale(state, [i.code for i in ipos])
@@ -119,18 +97,15 @@ def run(*, dry_run: bool = False) -> int:
     sent = 0
     for ipo in ipos:
         fetcher.enrich_detail(ipo)
-        feat = build_features(ipo, overrides)
+        feat = build_features(ipo)
         score = scorer.score_ipo(feat)
         msg = format_message(ipo, score)
         print("---")
         print(msg)
 
-        prev = state.get("notified", {}).get(ipo.code)
-        if prev and not _should_resend(prev, score):
-            print(f"[monitor] {ipo.code} already notified (score unchanged), skipping push")
+        if storage.is_notified(state, ipo.code):
+            print(f"[monitor] {ipo.code} already notified, skipping")
             continue
-        if prev:
-            print(f"[monitor] {ipo.code} score changed ({prev.get('score')}→{score.total}), re-pushing")
 
         if dry_run:
             print("[monitor] dry-run, not sending")

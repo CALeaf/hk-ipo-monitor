@@ -20,13 +20,13 @@ import requests
 
 from . import profile, scorer
 
-# Simulation constants for HKD PnL in backtest
-# These are rough averages — user's real allotment depends on entry fee and
-# oversubscription; numbers here are to compare strategies on equal footing.
+# Simulation constants for HKD PnL in backtest.
+# Calibrated to user's real 2026 observation: 甲尾 预期 0-1 手 due to 千倍超购
+# dilution. 乙头 红鞋 保证 1 + 偶尔 2.
 ASSUMED_ENTRY_FEE = 4000.0       # typical 港股 2026 每手入场费 ≈ 2k-6k HKD
-LOTS_ALLOTTED_YI_TOU = 2         # 乙组 红鞋 + 保证中 → 平均 ~2 手
-LOTS_ALLOTTED_JIA_WEI = 5        # 甲尾档位 → 平均 ~5 手 (研究参考: 400 手申购 稳中 9 手)
-LOTS_ALLOTTED_1LOT_CASH = 0.02   # 一手党 中签率 ~1-2% 的期望手数
+LOTS_ALLOTTED_YI_TOU = 1.5       # 乙头 = 红鞋保证 1 手 + 热门股偶 +1
+LOTS_ALLOTTED_JIA_WEI = 0.5      # 甲尾 = 2026 千倍超购下实际 0-1 手 (用户反馈校准)
+LOTS_ALLOTTED_1LOT_CASH = 0.02   # 一手党 中签率 ~1-2%
 
 
 NLR_URL = (
@@ -352,6 +352,38 @@ def run() -> dict:
 
     REPORT_PATH.write_text("\n".join(lines), encoding="utf-8")
     print(f"[backtest] wrote {REPORT_PATH}")
+
+    # ---- Peer stats export (monitor reads this to show "同赛道 2026 均值") ----
+    def classify_tier(text: str) -> str | None:
+        if scorer._any_match(text, scorer.TIER1_INDUSTRIES): return "Tier1"
+        if scorer._any_match(text, scorer.TIER2_INDUSTRIES): return "Tier2"
+        if scorer._any_match(text, scorer.COLD_INDUSTRIES): return "冷门"
+        return None
+
+    peer_stats: dict[str, dict] = {"Tier1": [], "Tier2": [], "冷门": [], "其他": []}
+    for r in rows:
+        if r["pct"] is None:
+            continue
+        text = f"{r.get('industry','')} {r['name']}"
+        tier = classify_tier(text) or "其他"
+        peer_stats[tier].append(r["pct"])
+
+    summary = {}
+    for tier, pcts in peer_stats.items():
+        if not pcts:
+            continue
+        summary[tier] = {
+            "n": len(pcts),
+            "avg_pct": round(sum(pcts) / len(pcts), 2),
+            "median_pct": round(sorted(pcts)[len(pcts)//2], 2),
+            "min_pct": round(min(pcts), 2),
+            "max_pct": round(max(pcts), 2),
+            "win_rate": round(sum(1 for p in pcts if p > 0) / len(pcts), 3),
+        }
+    import json as _json
+    (DATA_DIR / "peer_stats.json").write_text(_json.dumps(summary, ensure_ascii=False, indent=2))
+    print(f"[backtest] wrote peer_stats.json: {summary}")
+
     return {"report": str(REPORT_PATH), "n": len(rows), "A": a, "B": b, "C": c, "D": d}
 
 

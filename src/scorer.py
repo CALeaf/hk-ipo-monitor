@@ -30,10 +30,10 @@ from typing import Iterable, Optional
 # Override via CAPITAL_HKD env var. Default 200k (user said 20万 HKD).
 CAPITAL_HKD = float(os.environ.get("CAPITAL_HKD", "200000"))
 
-# Effective leverage at 富途/辉立 for HK IPO 融资 (margin).
-# Most 2026 IPOs: 90–99% margin, 0 interest, 100–200 HKD fixed fee per lot.
-# Default 20x (富途 95% margin 主流档); hot IPOs can unlock 50-100x on request.
-MARGIN_LEVERAGE = float(os.environ.get("MARGIN_LEVERAGE", "20.0"))
+# Effective leverage at your broker for HK IPO 融资.
+# 富途 (默认) 新股打新最高 10x。辉立/耀才/长桥对热门 IPO 可给到 20-100x。
+# Override via MARGIN_LEVERAGE env var.
+MARGIN_LEVERAGE = float(os.environ.get("MARGIN_LEVERAGE", "10.0"))
 
 # Threshold amounts for 甲乙组 (HKEX rule: split at 500 万 HKD subscription value)
 YI_TOU_HKD = 5_000_000      # 乙头 ≈ 500万申购，跨入乙组
@@ -182,44 +182,42 @@ def suggest_allocation(recommendation: str, capital: float = CAPITAL_HKD) -> dic
     Modern brokers (富途/辉立) offer 90–99% 0-interest margin, so 20万 HKD
     cash is enough保证金 for these tiers.
     """
-    def _margin_tag(margin: float) -> str:
-        if margin <= capital * 0.5:
-            return "✅ 本金充足，可并发多只"
-        if margin <= capital * 1.0:
-            return "🟡 保证金占大半本金，一次只能打 1 只；并发请用 100x"
-        return "⚠️ 20x 杠杆保证金超本金，必须用 100x 杠杆"
+    def _feasibility(subscribe: float) -> str:
+        """Show保证金 at user's broker leverage and note broker alternatives."""
+        lev = MARGIN_LEVERAGE
+        margin = subscribe / lev
+        lines = [f"保证金 {lev:.0f}x={margin/1e4:.1f} 万"]
+        # Always offer 100x reference for hot-IPO-capable brokers
+        if lev < 100:
+            lines.append(f"100x={subscribe/100/1e4:.1f} 万（辉立/耀才）")
+        tag = ""
+        if margin > capital:
+            tag = "⚠️ 富途 10x 够不着，需用辉立/耀才申请 100x"
+        elif margin > capital * 0.9:
+            tag = "🟡 保证金近满本金，一次只能打 1 只"
+        return " · ".join(lines) + (f"  {tag}" if tag else "")
 
     if recommendation == "STRONG_BUY_MARGIN_YIHEAD":
         subscribe = YI_TOU_HKD
-        margin_20x = subscribe / 20
-        margin_100x = subscribe / 100
+        margin = subscribe / MARGIN_LEVERAGE
         return {
             "tier": "YI_TOU",
             "subscribe_hkd": subscribe,
-            "margin_hkd": margin_20x,
-            "affordable": margin_20x <= capital * 0.9,
-            "note": (
-                f"🟢 融资打乙头 · 申购 ~{subscribe/1e4:.0f} 万 HKD · "
-                f"保证金 20x={margin_20x/1e4:.0f} 万 / 100x={margin_100x/1e4:.1f} 万  "
-                f"{_margin_tag(margin_20x)}"
-            ),
-            "expected_lots": "乙组保证 ≥1 手 + 红鞋机制下超购 >100x 时中 2-3 手",
+            "margin_hkd": margin,
+            "affordable": margin <= capital,
+            "note": f"🟢 融资打乙头 · 申购 ~{subscribe/1e4:.0f} 万 HKD · {_feasibility(subscribe)}",
+            "expected_lots": "乙组红鞋保证中 ≥1 手；2026 热门 IPO 典型中 1-2 手",
         }
     if recommendation == "BUY_ONE_LOT":
         subscribe = JIA_WEI_HKD
-        margin_20x = subscribe / 20
-        margin_100x = subscribe / 100
+        margin = subscribe / MARGIN_LEVERAGE
         return {
             "tier": "JIA_WEI",
             "subscribe_hkd": subscribe,
-            "margin_hkd": margin_20x,
-            "affordable": margin_20x <= capital * 0.9,
-            "note": (
-                f"🟡 融资打甲尾 · 申购 ~{subscribe/1e4:.0f} 万 HKD · "
-                f"保证金 20x={margin_20x/1e4:.0f} 万 / 100x={margin_100x/1e4:.1f} 万  "
-                f"{_margin_tag(margin_20x)}"
-            ),
-            "expected_lots": "预期 3-10 手 (视超购)；超购 >100x 可升级乙头",
+            "margin_hkd": margin,
+            "affordable": margin <= capital,
+            "note": f"🟡 融资打甲尾 · 申购 ~{subscribe/1e4:.0f} 万 HKD · {_feasibility(subscribe)}",
+            "expected_lots": "2026 千倍超购稀释下甲尾预期 0-1 手；超购 >100x 建议直接升乙头",
         }
     if recommendation == "WATCH":
         return {

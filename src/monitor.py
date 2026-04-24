@@ -2,14 +2,17 @@
 
 Scoring uses only data we can reliably scrape off AAStocks (sponsor, industry,
 market cap, price range). The TG message then nudges the user to personally
-verify the dynamic signals (超购 / 基石 / A+H / 暗盘) before committing.
+verify the dynamic signals (超购 / 基石 / A+H) before committing.
 """
 
 from __future__ import annotations
 
+import json
 import os
+import re
 import sys
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, date
+from pathlib import Path
 
 try:
     from dotenv import load_dotenv
@@ -21,6 +24,81 @@ from . import fetcher, scorer, storage, telegram
 
 
 HKT = timezone(timedelta(hours=8))
+PEER_STATS_PATH = Path(__file__).resolve().parent.parent / "data" / "peer_stats.json"
+
+
+def _load_peer_stats() -> dict:
+    try:
+        return json.loads(PEER_STATS_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _classify_tier(text: str) -> str | None:
+    """Classify an IPO into Tier1/Tier2/冷门 using the same rules as scorer."""
+    if scorer._any_match(text, scorer.TIER1_INDUSTRIES): return "Tier1"
+    if scorer._any_match(text, scorer.TIER2_INDUSTRIES): return "Tier2"
+    if scorer._any_match(text, scorer.COLD_INDUSTRIES): return "冷门"
+    return "其他"
+
+
+def peer_benchmark_line(ipo: fetcher.IPO) -> str | None:
+    """Return a short line like '2026 Tier2 赛道 4 只 · 均值 +87% · 胜率 100%'."""
+    stats = _load_peer_stats()
+    if not stats:
+        return None
+    text = f"{ipo.industry} {ipo.name}"
+    tier = _classify_tier(text)
+    if tier not in stats:
+        return None
+    s = stats[tier]
+    return (
+        f"📊 2026 同 <b>{tier}</b> 赛道历史 {s['n']} 只 · "
+        f"均值 <b>{s['avg_pct']:+.1f}%</b> · "
+        f"中位数 {s['median_pct']:+.1f}% · "
+        f"胜率 {s['win_rate']*100:.0f}%"
+    )
+
+
+def _parse_aastocks_date(s: str) -> date | None:
+    """'2026/04/29' → date(2026,4,29). Return None on unknown format."""
+    m = re.match(r"(\d{4})/(\d{1,2})/(\d{1,2})", s or "")
+    if not m:
+        return None
+    try:
+        return date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+    except ValueError:
+        return None
+
+
+def action_plan(ipo: fetcher.IPO) -> str:
+    """Phased action plan based on where we are in the offering cycle."""
+    today = datetime.now(HKT).date()
+    deadline = _parse_aastocks_date(ipo.apply_deadline)
+    grey = _parse_aastocks_date(ipo.grey_market_date)
+    listd = _parse_aastocks_date(ipo.list_date)
+
+    lines = ["<b>📅 行动计划：</b>"]
+    if deadline and today < deadline:
+        days = (deadline - today).days
+        lines.append(f"  · 今天-明天（距截止 {days} 天）: 富途/捷利 查超购倍数 + 基石")
+        lines.append(f"  · {deadline.strftime('%m/%d')} 14:00 前: 据下方决策表下单")
+    elif deadline and today == deadline:
+        lines.append(f"  · ⏰ <b>今天是申购截止日</b>（{deadline.strftime('%m/%d')}）—— 马上查超购 + 下单")
+    if grey:
+        lines.append(f"  · {grey.strftime('%m/%d')} 暗盘晚: 破发立即第二天开盘卖 · 涨 >20% 持有")
+    if listd:
+        lines.append(f"  · {listd.strftime('%m/%d')} 上市当天: 开盘直接市价卖")
+    return "\n".join(lines)
+
+
+DECISION_TREE = (
+    "<b>🎯 超购决策表（你查到超购后照这个打）：</b>\n"
+    "  · <b>&gt;100x</b> + 基石&gt;40% → 🟢 升<b>乙头</b>（辉立/耀才 100x，5 万保证金）\n"
+    "  · <b>50-100x</b>            → 🟡 上<b>甲尾</b>（需 100x 杠杆，否则放弃）\n"
+    "  · <b>15-50x</b>             → 🔴 <b>踩踏区间 放弃</b>（触发回拨但承接不足）\n"
+    "  · <b>&lt;15x</b>             → ⚪ 1 手现金摸彩（期望值低）"
+)
 
 
 def build_features(ipo: fetcher.IPO) -> dict:
@@ -102,19 +180,37 @@ def format_message(ipo: fetcher.IPO, score: scorer.Score) -> str:
     for r in score.reasons:
         lines.append(f"  {r}")
 
-    # Allocation suggestion — concrete HKD amounts, not "1 手"
+    # Peer benchmark for the stock's tier (from backtest peer_stats.json)
+    peer = peer_benchmark_line(ipo)
+    if peer:
+        lines.append("")
+        lines.append(peer)
+
+    # Allocation suggestion — concrete HKD amounts at user's leverage
     alloc = score.allocation or {}
     if alloc.get("note"):
         lines.append("")
-        lines.append(f"<b>💰 档位建议（本金 {scorer.CAPITAL_HKD/1e4:.0f} 万 HKD · 富途/辉立 融资）：</b>")
+        lines.append(
+            f"<b>💰 档位建议（本金 {scorer.CAPITAL_HKD/1e4:.0f} 万 · 杠杆 {scorer.MARGIN_LEVERAGE:.0f}x）：</b>"
+        )
         lines.append(f"  {alloc['note']}")
         if alloc.get("expected_lots") and alloc["expected_lots"] != "—":
             lines.append(f"  中签预期: {alloc['expected_lots']}")
 
-    lines.append("\n<b>📋 自行核对：</b>")
-    lines.append(SELF_CHECK_ALWAYS.rstrip())
+    # Phased action plan (dates + what to do each day)
+    lines.append("")
+    lines.append(action_plan(ipo))
+
+    # Decision tree keyed by 超购 (the one number that flips the call)
+    lines.append("")
+    lines.append(DECISION_TREE)
+
+    # Other self-check signals that don't fit the decision tree
+    lines.append("")
+    lines.append("<b>📋 其他自行核对：</b>")
+    lines.append("  · 基石锁仓比例（招股书 / 捷利）—— >60% 抛压小；顶级名单（淡马锡/GIC/阿布扎比/高瓴）再加一档")
     if _is_h_share(ipo):
-        lines.append(SELF_CHECK_H_SHARE.rstrip())
+        lines.append("  · A+H 折让（当日 A 股收盘）—— 折让 >30% 安全垫厚；港股溢价建议放弃")
 
     lines.append("")
     lines.append(SCORING_RUBRIC.rstrip())

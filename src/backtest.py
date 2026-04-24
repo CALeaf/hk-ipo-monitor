@@ -20,6 +20,14 @@ import requests
 
 from . import profile, scorer
 
+# Simulation constants for HKD PnL in backtest
+# These are rough averages — user's real allotment depends on entry fee and
+# oversubscription; numbers here are to compare strategies on equal footing.
+ASSUMED_ENTRY_FEE = 4000.0       # typical 港股 2026 每手入场费 ≈ 2k-6k HKD
+LOTS_ALLOTTED_YI_TOU = 2         # 乙组 红鞋 + 保证中 → 平均 ~2 手
+LOTS_ALLOTTED_JIA_WEI = 5        # 甲尾档位 → 平均 ~5 手 (研究参考: 400 手申购 稳中 9 手)
+LOTS_ALLOTTED_1LOT_CASH = 0.02   # 一手党 中签率 ~1-2% 的期望手数
+
 
 NLR_URL = (
     "https://www2.hkexnews.hk/-/media/HKEXnews/Homepage/New-Listings/"
@@ -228,6 +236,41 @@ def run() -> dict:
     c = cum_per_share([r for r in valid if r["score"] >= 3])  # BUY or better
     d = cum_per_share([r for r in valid if r["rec"] == "STRONG_BUY_MARGIN_YIHEAD"])
 
+    # ---- HKD PnL simulation by subscription tier (the real comparison) ----
+    def hkd_pnl_by_tier(row: dict, tier: str) -> float:
+        if row["pct"] is None:
+            return 0.0
+        if tier == "1LOT_CASH":
+            lots = LOTS_ALLOTTED_1LOT_CASH
+        elif tier == "JIA_WEI":
+            lots = LOTS_ALLOTTED_JIA_WEI
+        elif tier == "YI_TOU":
+            lots = LOTS_ALLOTTED_YI_TOU
+        else:
+            return 0.0
+        return lots * ASSUMED_ENTRY_FEE * row["pct"] / 100
+
+    def strategy_pnl(rows_, tier_of):
+        total = sum(hkd_pnl_by_tier(r, tier_of(r)) for r in rows_)
+        n_played = sum(1 for r in rows_ if tier_of(r) != "SKIP")
+        return {"total_hkd": total, "n": n_played}
+
+    # Strategy 1: 全打 1 手现金 (user's current broken approach)
+    cash_1lot = strategy_pnl(valid, lambda r: "1LOT_CASH")
+    # Strategy 2: 全打甲尾 (baseline for margin-based全打)
+    jia_wei_all = strategy_pnl(valid, lambda r: "JIA_WEI")
+    # Strategy 3: scorer-tier (STRONG_BUY→乙头, BUY→甲尾, rest→skip)
+    def tier_from_rec(r):
+        if r["rec"] == "STRONG_BUY_MARGIN_YIHEAD": return "YI_TOU"
+        if r["rec"] == "BUY_ONE_LOT": return "JIA_WEI"
+        return "SKIP"
+    tiered = strategy_pnl(valid, tier_from_rec)
+    # Strategy 4: score ≥ 3 forces 甲尾 (since STRONG_BUY needs超购 confirmation
+    # which we don't have at backtest time)
+    def tier_score_ge3(r):
+        return "JIA_WEI" if r["score"] >= 3 else "SKIP"
+    ge3_jia_wei = strategy_pnl(valid, tier_score_ge3)
+
     # ---- Write markdown report ----
     lines = []
     lines.append(f"# 港股打新 2026 回测\n")
@@ -241,10 +284,26 @@ def run() -> dict:
     lines.append(f"| B · 筛掉 SKIP 1 手 | {b['n']} | {b['win_rate']:.0%} | {b['avg_pct']:+.2f}% | {b['total_pct']:+.2f}% |")
     lines.append(f"| C · score≥3 (BUY+) 1 手 | {c['n']} | {c['win_rate']:.0%} | {c['avg_pct']:+.2f}% | {c['total_pct']:+.2f}% |")
     lines.append(f"| D · 强推 (score≥6) 1 手 | {d['n']} | {d['win_rate']:.0%} | {d['avg_pct']:+.2f}% | {d['total_pct']:+.2f}% |")
+
+    # ---- HKD PnL simulation (the view that actually matters) ----
+    lines.append("\n## 实际 HKD PnL 模拟（才是 20 万本金该看的图）\n")
+    lines.append(f"假设：每手入场费 {ASSUMED_ENTRY_FEE:,.0f} HKD（2026 港股均值），")
+    lines.append(f"1 手现金中签率 ~{LOTS_ALLOTTED_1LOT_CASH*100:.0f}%；")
+    lines.append(f"甲尾中签 ~{LOTS_ALLOTTED_JIA_WEI} 手；乙头中签 ~{LOTS_ALLOTTED_YI_TOU} 手（含红鞋保证）。\n")
+    lines.append("| 策略 | 参与 | 2026 累计盈亏 (HKD) |")
+    lines.append("|---|---:|---:|")
+    lines.append(f"| 🔴 全打 1 手现金（你目前的方式）| {cash_1lot['n']} | {cash_1lot['total_hkd']:+,.0f} |")
+    lines.append(f"| 🟡 全打甲尾融资 | {jia_wei_all['n']} | {jia_wei_all['total_hkd']:+,.0f} |")
+    lines.append(f"| 🟢 scorer 分档（强推→乙头, BUY→甲尾, 其他不打）| {tiered['n']} | {tiered['total_hkd']:+,.0f} |")
+    lines.append(f"| 🟢 score≥3 全部打甲尾 | {ge3_jia_wei['n']} | {ge3_jia_wei['total_hkd']:+,.0f} |")
     lines.append("")
-    lines.append("> 输入字段：HKEX NLR 的发行价/保荐人 + Eastmoney 的行业/业务描述。")
-    lines.append("> 基石强度 / 超购倍数 / A+H 折让 在回测时点不可还原，等同未赋分。")
-    lines.append("> 实盘 Monitor 同样只用这些稳定字段打基础分，让用户在 TG 消息里自行核对动态指标。")
+    lines.append("> ⚠️ 数字是估算不是精算。真实中签手数看每只股的具体超购倍数和每手股数；")
+    lines.append("> 但数量级对的上：1 手现金 = 基本零收益；融资甲尾/乙头 = 有意义的年化回报。")
+    lines.append("")
+    lines.append("### 备注")
+    lines.append("- 输入字段：HKEX NLR 的发行价/保荐人 + Eastmoney 的行业/业务描述。")
+    lines.append("- 基石强度 / 超购倍数 / A+H 折让 在回测时点不可还原，等同未赋分。")
+    lines.append("- 实盘 Monitor 同样只用这些稳定字段打基础分，让用户在 TG 消息里自行核对动态指标。")
 
     # ---- Score × performance segmentation (the actual discriminability check) ----
     def _seg(predicate, label):

@@ -22,8 +22,23 @@ or enriched via future data connectors.
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from typing import Iterable, Optional
+
+# User capital in HKD — drives allocation sizing.
+# Override via CAPITAL_HKD env var. Default 200k (user said 20万 HKD).
+CAPITAL_HKD = float(os.environ.get("CAPITAL_HKD", "200000"))
+
+# Effective leverage at 富途/辉立 for HK IPO 融资 (margin).
+# Most 2026 IPOs: 90–99% margin, 0 interest, 100–200 HKD fixed fee per lot.
+# Default 20x (富途 95% margin 主流档); hot IPOs can unlock 50-100x on request.
+MARGIN_LEVERAGE = float(os.environ.get("MARGIN_LEVERAGE", "20.0"))
+
+# Threshold amounts for 甲乙组 (HKEX rule: split at 500 万 HKD subscription value)
+YI_TOU_HKD = 5_000_000      # 乙头 ≈ 500万申购，跨入乙组
+JIA_WEI_HKD = 4_000_000     # 甲尾 ≈ 400万申购 (甲组最高档附近)
+JIA_MID_HKD = 500_000       # 甲中 ≈ 50万申购 (摸彩性质)
 
 # ---- Sponsor reputation lists ------------------------------------------------
 
@@ -145,9 +160,87 @@ class Score:
     total: int
     recommendation: str
     reasons: list[str]
+    allocation: dict | None = None   # {"tier": ..., "subscribe_hkd": ..., "margin_hkd": ..., "note": ...}
 
     def to_dict(self) -> dict:
-        return {"total": self.total, "recommendation": self.recommendation, "reasons": self.reasons}
+        return {
+            "total": self.total,
+            "recommendation": self.recommendation,
+            "reasons": self.reasons,
+            "allocation": self.allocation,
+        }
+
+
+def suggest_allocation(recommendation: str, capital: float = CAPITAL_HKD) -> dict:
+    """Given recommendation bucket + user capital, propose a subscription size.
+
+    Key economic truth: at 2026 low 甲组 allotment rates (<1% for hot IPOs),
+    1 手现金 is effectively not participating. Real 打新 requires sufficient
+    subscription size to either:
+      - 乙头 (≥500万 HKD): guaranteed ≥1 lot + better 乙组 allotment
+      - 甲尾 (~400万 HKD): typically wins 5-10 lots even in hot IPOs
+    Modern brokers (富途/辉立) offer 90–99% 0-interest margin, so 20万 HKD
+    cash is enough保证金 for these tiers.
+    """
+    def _margin_tag(margin: float) -> str:
+        if margin <= capital * 0.5:
+            return "✅ 本金充足，可并发多只"
+        if margin <= capital * 1.0:
+            return "🟡 保证金占大半本金，一次只能打 1 只；并发请用 100x"
+        return "⚠️ 20x 杠杆保证金超本金，必须用 100x 杠杆"
+
+    if recommendation == "STRONG_BUY_MARGIN_YIHEAD":
+        subscribe = YI_TOU_HKD
+        margin_20x = subscribe / 20
+        margin_100x = subscribe / 100
+        return {
+            "tier": "YI_TOU",
+            "subscribe_hkd": subscribe,
+            "margin_hkd": margin_20x,
+            "affordable": margin_20x <= capital * 0.9,
+            "note": (
+                f"🟢 融资打乙头 · 申购 ~{subscribe/1e4:.0f} 万 HKD · "
+                f"保证金 20x={margin_20x/1e4:.0f} 万 / 100x={margin_100x/1e4:.1f} 万  "
+                f"{_margin_tag(margin_20x)}"
+            ),
+            "expected_lots": "乙组保证 ≥1 手 + 红鞋机制下超购 >100x 时中 2-3 手",
+        }
+    if recommendation == "BUY_ONE_LOT":
+        subscribe = JIA_WEI_HKD
+        margin_20x = subscribe / 20
+        margin_100x = subscribe / 100
+        return {
+            "tier": "JIA_WEI",
+            "subscribe_hkd": subscribe,
+            "margin_hkd": margin_20x,
+            "affordable": margin_20x <= capital * 0.9,
+            "note": (
+                f"🟡 融资打甲尾 · 申购 ~{subscribe/1e4:.0f} 万 HKD · "
+                f"保证金 20x={margin_20x/1e4:.0f} 万 / 100x={margin_100x/1e4:.1f} 万  "
+                f"{_margin_tag(margin_20x)}"
+            ),
+            "expected_lots": "预期 3-10 手 (视超购)；超购 >100x 可升级乙头",
+        }
+    if recommendation == "WATCH":
+        return {
+            "tier": "WATCH",
+            "subscribe_hkd": 0,
+            "margin_hkd": 0,
+            "affordable": True,
+            "note": "⚪ 观望 · 核对超购后再定档",
+            "expected_lots": (
+                "若超购 >100x & 基石强 → 升级乙头 | "
+                "若 15-50x → 放弃（踩踏区间）| <15x → 小额甲中档摸彩"
+            ),
+        }
+    return {
+        "tier": "SKIP",
+        "subscribe_hkd": 0,
+        "margin_hkd": 0,
+        "affordable": True,
+        "note": "🔴 放弃 · 不值得占用融资额度",
+        "expected_lots": "—",
+    }
 
 
 def _any_match(haystack: str, needles: Iterable[str]) -> list[str]:
@@ -303,7 +396,8 @@ def score_ipo(features: dict) -> Score:
             reasons.append(f"⚠️ 港股对 A 股溢价 {-ahd:.0%} (-1)")
 
     rec = _recommendation(total)
-    return Score(total=total, recommendation=rec, reasons=reasons)
+    alloc = suggest_allocation(rec)
+    return Score(total=total, recommendation=rec, reasons=reasons, allocation=alloc)
 
 
 def _recommendation(score: int) -> str:
@@ -320,9 +414,9 @@ def _recommendation(score: int) -> str:
 
 
 RECOMMENDATION_LABELS = {
-    "STRONG_BUY_MARGIN_YIHEAD": "🟢 强推 · 核对超购后可冲乙头",
-    "BUY_ONE_LOT":              "🟡 基本面 OK · 1 手现金",
-    "WATCH":                    "⚪ 一般 · 看超购再定",
+    "STRONG_BUY_MARGIN_YIHEAD": "🟢 强推 · 融资打乙头",
+    "BUY_ONE_LOT":              "🟡 基本面 OK · 融资打甲尾",
+    "WATCH":                    "⚪ 观望 · 看超购再定档",
     "SKIP":                     "🔴 放弃",
 }
 

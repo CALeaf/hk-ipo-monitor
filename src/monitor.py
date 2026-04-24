@@ -89,6 +89,15 @@ def format_message(ipo: fetcher.IPO, score: scorer.Score) -> str:
     for r in score.reasons:
         lines.append(f"  {r}")
 
+    # Allocation suggestion — concrete HKD amounts, not "1 手"
+    alloc = score.allocation or {}
+    if alloc.get("note"):
+        lines.append("")
+        lines.append(f"<b>💰 档位建议（本金 {scorer.CAPITAL_HKD/1e4:.0f} 万 HKD · 富途/辉立 融资）：</b>")
+        lines.append(f"  {alloc['note']}")
+        if alloc.get("expected_lots") and alloc["expected_lots"] != "—":
+            lines.append(f"  中签预期: {alloc['expected_lots']}")
+
     lines.append("\n<b>📋 自行核对：</b>")
     lines.append(SELF_CHECK_ALWAYS.rstrip())
     if _is_h_share(ipo):

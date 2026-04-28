@@ -228,7 +228,7 @@ def suggest_allocation(recommendation: str, capital: float = CAPITAL_HKD) -> dic
             "note": "⚪ 观望 · 核对超购后再定档",
             "expected_lots": (
                 "若超购 >100x & 基石强 → 升级乙头 | "
-                "若 15-50x → 放弃（踩踏区间）| <15x → 小额甲中档摸彩"
+                "若 15-50x → 放弃（踩踏区间）| &lt;15x → 小额甲中档摸彩"
             ),
         }
     return {
@@ -295,7 +295,7 @@ def score_ipo(features: dict) -> Score:
             reasons.append(f"🟡 基石锁仓 {cs_ratio:.0%} <b>+1</b>")
         elif cs_ratio < 0.20:
             total -= 1
-            reasons.append(f"❌ 基石锁仓 {cs_ratio:.0%} <b>-1</b> · <20% 机构背书不足")
+            reasons.append(f"❌ 基石锁仓 {cs_ratio:.0%} <b>-1</b> · &lt;20% 机构背书不足")
 
     # 3. Cornerstone quality
     cs_names = features.get("cornerstone_names") or ""
@@ -323,7 +323,7 @@ def score_ipo(features: dict) -> Score:
             reasons.append(f"🟡 公开超购 {os_ratio:.1f}x <b>+1</b> · 不触发回拨但有热度")
         else:
             total -= 2
-            reasons.append(f"❌ 公开超购 {os_ratio:.1f}x <b>-2</b> · <5x 冷门无庄家")
+            reasons.append(f"❌ 公开超购 {os_ratio:.1f}x <b>-2</b> · &lt;5x 冷门无庄家")
 
     # 5. Effective float = 1 - cornerstone_ratio - intl_placing_ratio
     intl = features.get("intl_placing_ratio")
@@ -331,7 +331,7 @@ def score_ipo(features: dict) -> Score:
         float_ratio = max(0.0, 1.0 - cs_ratio - intl)
         if float_ratio < 0.15:
             total += 1
-            reasons.append(f"✅ 有效流通盘 {float_ratio:.0%} <b>+1</b> · <15% 筹码极紧，易拉升")
+            reasons.append(f"✅ 有效流通盘 {float_ratio:.0%} <b>+1</b> · &lt;15% 筹码极紧，易拉升")
         elif float_ratio > 0.50:
             total -= 1
             reasons.append(f"⚠️ 有效流通盘 {float_ratio:.0%} <b>-1</b> · >50% 抛压大")

@@ -1,3 +1,18 @@
 {
-  "notified": {}
+  "notified": {
+    "01187": {
+      "list_date": "2026/05/06",
+      "name": "可孚医疗",
+      "notified_at": "2026-04-29T04:10:33+08:00",
+      "recommendation": "BUY_ONE_LOT",
+      "score": 3
+    },
+    "01609": {
+      "list_date": "2026/05/05",
+      "name": "天星医疗",
+      "notified_at": "2026-04-29T04:10:32+08:00",
+      "recommendation": "BUY_ONE_LOT",
+      "score": 3
+    }
+  }
 }

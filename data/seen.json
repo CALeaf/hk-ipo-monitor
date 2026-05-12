@@ -1,5 +1,12 @@
 {
   "notified": {
+    "01511": {
+      "list_date": "2026/05/20",
+      "name": "驭势科技",
+      "notified_at": "2026-05-12T12:30:16+08:00",
+      "recommendation": "WATCH",
+      "score": 2
+    },
     "06871": {
       "list_date": "2026/05/18",
       "name": "翼菲科技",
@@ -7,19 +14,12 @@
       "recommendation": "WATCH",
       "score": 1
     },
-    "07630": {
-      "list_date": "2026/05/13",
-      "name": "英派药业─B",
-      "notified_at": "2026-05-05T12:11:54+08:00",
-      "recommendation": "BUY_ONE_LOT",
-      "score": 3
-    },
-    "07666": {
-      "list_date": "2026/05/13",
-      "name": "剂泰科技─P",
-      "notified_at": "2026-05-05T12:11:56+08:00",
+    "07688": {
+      "list_date": "2026/05/20",
+      "name": "拓璞数控",
+      "notified_at": "2026-05-12T12:30:19+08:00",
       "recommendation": "WATCH",
-      "score": 2
+      "score": 1
     }
   }
 }

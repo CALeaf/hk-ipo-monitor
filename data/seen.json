@@ -1,5 +1,12 @@
 {
   "notified": {
+    "00901": {
+      "list_date": "2026/05/27",
+      "name": "华曦达",
+      "notified_at": "2026-05-18T13:00:38+08:00",
+      "recommendation": "WATCH",
+      "score": 2
+    },
     "01511": {
       "list_date": "2026/05/20",
       "name": "驭势科技",
@@ -7,10 +14,17 @@
       "recommendation": "WATCH",
       "score": 2
     },
-    "06871": {
-      "list_date": "2026/05/18",
-      "name": "翼菲科技",
-      "notified_at": "2026-05-16T12:22:54+08:00",
+    "02723": {
+      "list_date": "2026/05/27",
+      "name": "深演智能",
+      "notified_at": "2026-05-18T13:00:40+08:00",
+      "recommendation": "WATCH",
+      "score": 1
+    },
+    "03310": {
+      "list_date": "2026/05/27",
+      "name": "云英谷科技",
+      "notified_at": "2026-05-18T13:00:42+08:00",
       "recommendation": "WATCH",
       "score": 2
     },

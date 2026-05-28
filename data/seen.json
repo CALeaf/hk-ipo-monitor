@@ -1,18 +1,32 @@
 {
   "notified": {
+    "01081": {
+      "list_date": "2026/06/05",
+      "name": "大金重工",
+      "notified_at": "2026-05-28T13:02:17+08:00",
+      "recommendation": "WATCH",
+      "score": 2
+    },
+    "01779": {
+      "list_date": "2026/06/05",
+      "name": "天辰生物─B",
+      "notified_at": "2026-05-28T13:02:20+08:00",
+      "recommendation": "WATCH",
+      "score": 0
+    },
+    "02290": {
+      "list_date": "2026/06/05",
+      "name": "龙丰集团",
+      "notified_at": "2026-05-28T13:02:22+08:00",
+      "recommendation": "WATCH",
+      "score": 0
+    },
     "02553": {
       "list_date": "2026/06/03",
       "name": "首钢朗泽",
       "notified_at": "2026-05-27T13:07:27+08:00",
       "recommendation": "WATCH",
       "score": 1
-    },
-    "03388": {
-      "list_date": "2026/05/29",
-      "name": "创想三维",
-      "notified_at": "2026-05-20T12:57:00+08:00",
-      "recommendation": "WATCH",
-      "score": 2
     }
   }
 }

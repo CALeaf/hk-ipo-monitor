@@ -1,3 +1,11 @@
 {
-  "notified": {}
+  "notified": {
+    "06658": {
+      "list_date": "2026/06/15",
+      "name": "溜溜梅",
+      "notified_at": "2026-06-05T13:07:33+08:00",
+      "recommendation": "WATCH",
+      "score": 2
+    }
+  }
 }

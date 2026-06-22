@@ -7,13 +7,6 @@
       "recommendation": "WATCH",
       "score": 2
     },
-    "01392": {
-      "list_date": "2026/06/22",
-      "name": "海清智元",
-      "notified_at": "2026-06-19T14:05:33+08:00",
-      "recommendation": "WATCH",
-      "score": 1
-    },
     "01688": {
       "list_date": "2026/06/26",
       "name": "领益智造",
@@ -49,6 +42,13 @@
       "recommendation": "BUY_ONE_LOT",
       "score": 3
     },
+    "02697": {
+      "list_date": "2026/06/30",
+      "name": "真健康医疗─B",
+      "notified_at": "2026-06-22T14:18:42+08:00",
+      "recommendation": "BUY_ONE_LOT",
+      "score": 4
+    },
     "03661": {
       "list_date": "2026/06/26",
       "name": "圣邦股份",
@@ -56,12 +56,12 @@
       "recommendation": "WATCH",
       "score": 2
     },
-    "06067": {
-      "list_date": "2026/06/23",
-      "name": "星源材质",
-      "notified_at": "2026-06-12T13:24:23+08:00",
-      "recommendation": "WATCH",
-      "score": 2
+    "03952": {
+      "list_date": "2026/06/30",
+      "name": "来福谐波",
+      "notified_at": "2026-06-22T14:18:46+08:00",
+      "recommendation": "BUY_ONE_LOT",
+      "score": 4
     },
     "06106": {
       "list_date": "2026/06/24",
@@ -70,19 +70,26 @@
       "recommendation": "BUY_ONE_LOT",
       "score": 3
     },
-    "06132": {
-      "list_date": "2026/06/23",
-      "name": "华健未来─B",
-      "notified_at": "2026-06-12T13:24:25+08:00",
-      "recommendation": "WATCH",
-      "score": 2
-    },
     "06228": {
       "list_date": "2026/06/26",
       "name": "PT Merdeka Gold-DRS",
       "notified_at": "2026-06-17T13:57:27+08:00",
       "recommendation": "WATCH",
       "score": 2
+    },
+    "06715": {
+      "list_date": "2026/06/30",
+      "name": "鲟龙科技",
+      "notified_at": "2026-06-22T14:18:50+08:00",
+      "recommendation": "WATCH",
+      "score": 0
+    },
+    "06915": {
+      "list_date": "2026/06/30",
+      "name": "江西生物",
+      "notified_at": "2026-06-22T14:18:54+08:00",
+      "recommendation": "BUY_ONE_LOT",
+      "score": 3
     },
     "09630": {
       "list_date": "2026/06/26",

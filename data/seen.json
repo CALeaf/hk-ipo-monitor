@@ -1,5 +1,12 @@
 {
   "notified": {
+    "00668": {
+      "list_date": "2026/07/02",
+      "name": "安克创新",
+      "notified_at": "2026-06-23T12:53:43+08:00",
+      "recommendation": "WATCH",
+      "score": 2
+    },
     "01191": {
       "list_date": "2026/06/29",
       "name": "海光芯正",
@@ -28,13 +35,6 @@
       "recommendation": "WATCH",
       "score": 2
     },
-    "02335": {
-      "list_date": "2026/06/24",
-      "name": "麦科医药─B",
-      "notified_at": "2026-06-15T14:12:15+08:00",
-      "recommendation": "BUY_ONE_LOT",
-      "score": 4
-    },
     "02672": {
       "list_date": "2026/06/29",
       "name": "白鸽在线",
@@ -56,19 +56,19 @@
       "recommendation": "WATCH",
       "score": 2
     },
+    "03774": {
+      "list_date": "2026/06/30",
+      "name": "亮晴控股",
+      "notified_at": "2026-06-23T12:53:32+08:00",
+      "recommendation": "WATCH",
+      "score": 0
+    },
     "03952": {
       "list_date": "2026/06/30",
       "name": "来福谐波",
       "notified_at": "2026-06-22T14:18:46+08:00",
       "recommendation": "BUY_ONE_LOT",
       "score": 4
-    },
-    "06106": {
-      "list_date": "2026/06/24",
-      "name": "仙工智能",
-      "notified_at": "2026-06-15T14:12:17+08:00",
-      "recommendation": "BUY_ONE_LOT",
-      "score": 3
     },
     "06228": {
       "list_date": "2026/06/26",

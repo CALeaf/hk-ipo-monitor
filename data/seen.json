@@ -14,27 +14,6 @@
       "recommendation": "WATCH",
       "score": 2
     },
-    "01688": {
-      "list_date": "2026/06/26",
-      "name": "领益智造",
-      "notified_at": "2026-06-17T13:57:15+08:00",
-      "recommendation": "WATCH",
-      "score": 2
-    },
-    "01956": {
-      "list_date": "2026/06/26",
-      "name": "中科闻歌",
-      "notified_at": "2026-06-17T13:57:18+08:00",
-      "recommendation": "BUY_ONE_LOT",
-      "score": 3
-    },
-    "02272": {
-      "list_date": "2026/06/26",
-      "name": "科拓股份",
-      "notified_at": "2026-06-17T13:57:21+08:00",
-      "recommendation": "WATCH",
-      "score": 2
-    },
     "02672": {
       "list_date": "2026/06/29",
       "name": "白鸽在线",
@@ -48,13 +27,6 @@
       "notified_at": "2026-06-22T14:18:42+08:00",
       "recommendation": "BUY_ONE_LOT",
       "score": 4
-    },
-    "03661": {
-      "list_date": "2026/06/26",
-      "name": "圣邦股份",
-      "notified_at": "2026-06-17T13:57:24+08:00",
-      "recommendation": "WATCH",
-      "score": 2
     },
     "03774": {
       "list_date": "2026/06/30",
@@ -70,13 +42,6 @@
       "recommendation": "BUY_ONE_LOT",
       "score": 4
     },
-    "06228": {
-      "list_date": "2026/06/26",
-      "name": "PT Merdeka Gold-DRS",
-      "notified_at": "2026-06-17T13:57:27+08:00",
-      "recommendation": "WATCH",
-      "score": 2
-    },
     "06715": {
       "list_date": "2026/06/30",
       "name": "鲟龙科技",
@@ -88,13 +53,6 @@
       "list_date": "2026/06/30",
       "name": "江西生物",
       "notified_at": "2026-06-22T14:18:54+08:00",
-      "recommendation": "BUY_ONE_LOT",
-      "score": 3
-    },
-    "09630": {
-      "list_date": "2026/06/26",
-      "name": "芯碁微装",
-      "notified_at": "2026-06-17T13:57:30+08:00",
       "recommendation": "BUY_ONE_LOT",
       "score": 3
     },

@@ -7,19 +7,12 @@
       "recommendation": "WATCH",
       "score": 2
     },
-    "01191": {
-      "list_date": "2026/06/29",
-      "name": "海光芯正",
-      "notified_at": "2026-06-18T13:27:14+08:00",
+    "02667": {
+      "list_date": "2026/07/07",
+      "name": "同仁堂医养",
+      "notified_at": "2026-06-26T13:01:32+08:00",
       "recommendation": "WATCH",
       "score": 2
-    },
-    "02672": {
-      "list_date": "2026/06/29",
-      "name": "白鸽在线",
-      "notified_at": "2026-06-18T13:27:16+08:00",
-      "recommendation": "BUY_ONE_LOT",
-      "score": 3
     },
     "02697": {
       "list_date": "2026/06/30",
@@ -55,13 +48,6 @@
       "notified_at": "2026-06-22T14:18:54+08:00",
       "recommendation": "BUY_ONE_LOT",
       "score": 3
-    },
-    "09637": {
-      "list_date": "2026/06/29",
-      "name": "礼邦医药─B",
-      "notified_at": "2026-06-18T13:27:18+08:00",
-      "recommendation": "WATCH",
-      "score": 2
     }
   }
 }

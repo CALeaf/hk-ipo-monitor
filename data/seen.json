@@ -7,12 +7,12 @@
       "recommendation": "WATCH",
       "score": 2
     },
-    "01191": {
-      "list_date": "2026/06/29",
-      "name": "海光芯正",
-      "notified_at": "2026-06-27T12:43:04+08:00",
-      "recommendation": "BUY_ONE_LOT",
-      "score": 4
+    "01770": {
+      "list_date": "2026/07/08",
+      "name": "东方科脉",
+      "notified_at": "2026-06-29T13:21:17+08:00",
+      "recommendation": "WATCH",
+      "score": 2
     },
     "02667": {
       "list_date": "2026/07/07",
@@ -21,20 +21,6 @@
       "recommendation": "WATCH",
       "score": 2
     },
-    "02672": {
-      "list_date": "2026/06/29",
-      "name": "白鸽在线",
-      "notified_at": "2026-06-27T12:43:07+08:00",
-      "recommendation": "BUY_ONE_LOT",
-      "score": 4
-    },
-    "02697": {
-      "list_date": "2026/06/30",
-      "name": "真健康医疗─B",
-      "notified_at": "2026-06-22T14:18:42+08:00",
-      "recommendation": "BUY_ONE_LOT",
-      "score": 4
-    },
     "03774": {
       "list_date": "2026/06/30",
       "name": "亮晴控股",
@@ -42,33 +28,40 @@
       "recommendation": "WATCH",
       "score": 0
     },
-    "03952": {
-      "list_date": "2026/06/30",
-      "name": "来福谐波",
-      "notified_at": "2026-06-22T14:18:46+08:00",
-      "recommendation": "BUY_ONE_LOT",
-      "score": 4
-    },
-    "06715": {
-      "list_date": "2026/06/30",
-      "name": "鲟龙科技",
-      "notified_at": "2026-06-22T14:18:50+08:00",
+    "06880": {
+      "list_date": "2026/07/08",
+      "name": "Momenta-W",
+      "notified_at": "2026-06-29T13:21:21+08:00",
       "recommendation": "WATCH",
-      "score": 0
+      "score": 2
     },
-    "06915": {
-      "list_date": "2026/06/30",
-      "name": "江西生物",
-      "notified_at": "2026-06-22T14:18:54+08:00",
+    "07656": {
+      "list_date": "2026/07/08",
+      "name": "瑞为技术",
+      "notified_at": "2026-06-29T13:21:24+08:00",
+      "recommendation": "WATCH",
+      "score": 2
+    },
+    "07687": {
+      "list_date": "2026/07/08",
+      "name": "易控智驾",
+      "notified_at": "2026-06-29T13:21:29+08:00",
       "recommendation": "BUY_ONE_LOT",
       "score": 3
     },
-    "09637": {
-      "list_date": "2026/06/29",
-      "name": "礼邦医药─B",
-      "notified_at": "2026-06-27T12:43:09+08:00",
+    "08090": {
+      "list_date": "2026/07/08",
+      "name": "宝盖新材",
+      "notified_at": "2026-06-29T13:21:32+08:00",
+      "recommendation": "SKIP",
+      "score": -1
+    },
+    "09971": {
+      "list_date": "2026/07/08",
+      "name": "基本半导体",
+      "notified_at": "2026-06-29T13:21:35+08:00",
       "recommendation": "BUY_ONE_LOT",
-      "score": 4
+      "score": 3
     }
   }
 }

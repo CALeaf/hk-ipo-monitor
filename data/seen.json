@@ -1,9 +1,16 @@
 {
   "notified": {
-    "00668": {
-      "list_date": "2026/07/02",
-      "name": "安克创新",
-      "notified_at": "2026-06-23T12:53:43+08:00",
+    "00537": {
+      "list_date": "2026/07/09",
+      "name": "普源精电",
+      "notified_at": "2026-06-30T12:56:17+08:00",
+      "recommendation": "WATCH",
+      "score": 2
+    },
+    "01377": {
+      "list_date": "2026/07/09",
+      "name": "鼎泰高科",
+      "notified_at": "2026-06-30T12:56:19+08:00",
       "recommendation": "WATCH",
       "score": 2
     },
@@ -14,6 +21,27 @@
       "recommendation": "WATCH",
       "score": 2
     },
+    "02249": {
+      "list_date": "2026/07/10",
+      "name": "晶合集成",
+      "notified_at": "2026-06-30T12:56:36+08:00",
+      "recommendation": "WATCH",
+      "score": 2
+    },
+    "02475": {
+      "list_date": "2026/07/09",
+      "name": "立讯精密",
+      "notified_at": "2026-06-30T12:56:23+08:00",
+      "recommendation": "WATCH",
+      "score": 2
+    },
+    "02523": {
+      "list_date": "2026/07/13",
+      "name": "永康控股",
+      "notified_at": "2026-06-30T12:56:43+08:00",
+      "recommendation": "WATCH",
+      "score": 0
+    },
     "02667": {
       "list_date": "2026/07/07",
       "name": "同仁堂医养",
@@ -21,12 +49,26 @@
       "recommendation": "WATCH",
       "score": 2
     },
-    "03774": {
-      "list_date": "2026/06/30",
-      "name": "亮晴控股",
-      "notified_at": "2026-06-23T12:53:32+08:00",
+    "02797": {
+      "list_date": "2026/07/09",
+      "name": "齐云山食品",
+      "notified_at": "2026-06-30T12:56:26+08:00",
+      "recommendation": "SKIP",
+      "score": -1
+    },
+    "03752": {
+      "list_date": "2026/07/09",
+      "name": "珞石机器人",
+      "notified_at": "2026-06-30T12:56:29+08:00",
       "recommendation": "WATCH",
-      "score": 0
+      "score": 2
+    },
+    "06745": {
+      "list_date": "2026/07/10",
+      "name": "滨化股份",
+      "notified_at": "2026-06-30T12:56:39+08:00",
+      "recommendation": "BUY_ONE_LOT",
+      "score": 3
     },
     "06880": {
       "list_date": "2026/07/08",
@@ -34,6 +76,13 @@
       "notified_at": "2026-06-29T13:21:21+08:00",
       "recommendation": "WATCH",
       "score": 2
+    },
+    "06951": {
+      "list_date": "2026/07/09",
+      "name": "三环集团",
+      "notified_at": "2026-06-30T12:56:33+08:00",
+      "recommendation": "WATCH",
+      "score": 0
     },
     "07656": {
       "list_date": "2026/07/08",

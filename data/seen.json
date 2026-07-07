@@ -14,13 +14,6 @@
       "recommendation": "WATCH",
       "score": 2
     },
-    "01770": {
-      "list_date": "2026/07/08",
-      "name": "东方科脉",
-      "notified_at": "2026-06-29T13:21:17+08:00",
-      "recommendation": "WATCH",
-      "score": 2
-    },
     "02249": {
       "list_date": "2026/07/10",
       "name": "晶合集成",
@@ -63,47 +56,12 @@
       "recommendation": "BUY_ONE_LOT",
       "score": 3
     },
-    "06880": {
-      "list_date": "2026/07/08",
-      "name": "Momenta-W",
-      "notified_at": "2026-06-29T13:21:21+08:00",
-      "recommendation": "WATCH",
-      "score": 2
-    },
     "06951": {
       "list_date": "2026/07/09",
       "name": "三环集团",
       "notified_at": "2026-06-30T12:56:33+08:00",
       "recommendation": "WATCH",
       "score": 0
-    },
-    "07656": {
-      "list_date": "2026/07/08",
-      "name": "瑞为技术",
-      "notified_at": "2026-06-29T13:21:24+08:00",
-      "recommendation": "WATCH",
-      "score": 2
-    },
-    "07687": {
-      "list_date": "2026/07/08",
-      "name": "易控智驾",
-      "notified_at": "2026-06-29T13:21:29+08:00",
-      "recommendation": "BUY_ONE_LOT",
-      "score": 3
-    },
-    "08090": {
-      "list_date": "2026/07/08",
-      "name": "宝盖新材",
-      "notified_at": "2026-06-29T13:21:32+08:00",
-      "recommendation": "SKIP",
-      "score": -1
-    },
-    "09971": {
-      "list_date": "2026/07/08",
-      "name": "基本半导体",
-      "notified_at": "2026-06-29T13:21:35+08:00",
-      "recommendation": "BUY_ONE_LOT",
-      "score": 3
     }
   }
 }

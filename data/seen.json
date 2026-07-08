@@ -1,16 +1,9 @@
 {
   "notified": {
-    "00537": {
+    "01770": {
       "list_date": "2026/07/09",
-      "name": "普源精电",
-      "notified_at": "2026-06-30T12:56:17+08:00",
-      "recommendation": "WATCH",
-      "score": 2
-    },
-    "01377": {
-      "list_date": "2026/07/09",
-      "name": "鼎泰高科",
-      "notified_at": "2026-06-30T12:56:19+08:00",
+      "name": "东方科脉",
+      "notified_at": "2026-07-08T12:00:13+08:00",
       "recommendation": "WATCH",
       "score": 2
     },
@@ -21,13 +14,6 @@
       "recommendation": "WATCH",
       "score": 2
     },
-    "02475": {
-      "list_date": "2026/07/09",
-      "name": "立讯精密",
-      "notified_at": "2026-06-30T12:56:23+08:00",
-      "recommendation": "WATCH",
-      "score": 2
-    },
     "02523": {
       "list_date": "2026/07/13",
       "name": "永康控股",
@@ -35,33 +21,12 @@
       "recommendation": "WATCH",
       "score": 0
     },
-    "02797": {
-      "list_date": "2026/07/09",
-      "name": "齐云山食品",
-      "notified_at": "2026-06-30T12:56:26+08:00",
-      "recommendation": "SKIP",
-      "score": -1
-    },
-    "03752": {
-      "list_date": "2026/07/09",
-      "name": "珞石机器人",
-      "notified_at": "2026-06-30T12:56:29+08:00",
-      "recommendation": "WATCH",
-      "score": 2
-    },
     "06745": {
       "list_date": "2026/07/10",
       "name": "滨化股份",
       "notified_at": "2026-06-30T12:56:39+08:00",
       "recommendation": "BUY_ONE_LOT",
       "score": 3
-    },
-    "06951": {
-      "list_date": "2026/07/09",
-      "name": "三环集团",
-      "notified_at": "2026-06-30T12:56:33+08:00",
-      "recommendation": "WATCH",
-      "score": 0
     }
   }
 }

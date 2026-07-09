@@ -1,32 +1,11 @@
 {
   "notified": {
-    "01770": {
-      "list_date": "2026/07/09",
-      "name": "东方科脉",
-      "notified_at": "2026-07-08T12:00:13+08:00",
-      "recommendation": "WATCH",
-      "score": 2
-    },
-    "02249": {
-      "list_date": "2026/07/10",
-      "name": "晶合集成",
-      "notified_at": "2026-06-30T12:56:36+08:00",
-      "recommendation": "WATCH",
-      "score": 2
-    },
     "02523": {
       "list_date": "2026/07/13",
       "name": "永康控股",
       "notified_at": "2026-06-30T12:56:43+08:00",
       "recommendation": "WATCH",
       "score": 0
-    },
-    "06745": {
-      "list_date": "2026/07/10",
-      "name": "滨化股份",
-      "notified_at": "2026-06-30T12:56:39+08:00",
-      "recommendation": "BUY_ONE_LOT",
-      "score": 3
     }
   }
 }

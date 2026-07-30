@@ -1,3 +1,11 @@
 {
-  "notified": {}
+  "notified": {
+    "02261": {
+      "list_date": "2026/08/07",
+      "name": "拿森科技",
+      "notified_at": "2026-07-30T11:48:44+08:00",
+      "recommendation": "BUY_ONE_LOT",
+      "score": 3
+    }
+  }
 }

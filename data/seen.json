@@ -1,3 +1,11 @@
 {
-  "notified": {}
+  "notified": {
+    "03223": {
+      "list_date": "2026/08/25",
+      "name": "君正股份",
+      "notified_at": "2026-08-17T10:12:05+08:00",
+      "recommendation": "WATCH",
+      "score": 1
+    }
+  }
 }

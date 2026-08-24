@@ -1,11 +1,18 @@
 {
   "notified": {
-    "03223": {
-      "list_date": "2026/08/25",
-      "name": "君正股份",
-      "notified_at": "2026-08-17T10:12:05+08:00",
+    "00625": {
+      "list_date": "2026/09/01",
+      "name": "希音─W",
+      "notified_at": "2026-08-24T10:14:51+08:00",
       "recommendation": "WATCH",
-      "score": 1
+      "score": 0
+    },
+    "09615": {
+      "list_date": "2026/09/01",
+      "name": "梅卡曼德机器人",
+      "notified_at": "2026-08-24T10:14:54+08:00",
+      "recommendation": "WATCH",
+      "score": 2
     }
   }
 }

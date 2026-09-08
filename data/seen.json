@@ -1,11 +1,3 @@
 {
-  "notified": {
-    "03231": {
-      "list_date": "2026/09/09",
-      "name": "优地机器人",
-      "notified_at": "2026-08-31T14:21:13+08:00",
-      "recommendation": "WATCH",
-      "score": 2
-    }
-  }
+  "notified": {}
 }

@@ -1,18 +1,32 @@
 {
   "notified": {
-    "06727": {
-      "list_date": "2026/09/21",
-      "name": "星环科技",
-      "notified_at": "2026-09-19T13:13:34+08:00",
+    "03228": {
+      "list_date": "2026/09/29",
+      "name": "深圳市景旺电子",
+      "notified_at": "2026-09-21T13:36:00+08:00",
+      "recommendation": "WATCH",
+      "score": 2
+    },
+    "03757": {
+      "list_date": "2026/09/29",
+      "name": "罗博特科智能科技",
+      "notified_at": "2026-09-21T13:36:03+08:00",
       "recommendation": "BUY_ONE_LOT",
       "score": 3
     },
-    "09856": {
-      "list_date": "2026/09/22",
-      "name": "纳真科技",
-      "notified_at": "2026-09-14T13:32:11+08:00",
-      "recommendation": "WATCH",
-      "score": 2
+    "06731": {
+      "list_date": "2026/09/29",
+      "name": "本末动力（北京）科技",
+      "notified_at": "2026-09-21T13:36:06+08:00",
+      "recommendation": "BUY_ONE_LOT",
+      "score": 3
+    },
+    "09607": {
+      "list_date": "2026/09/29",
+      "name": "肜程新材料",
+      "notified_at": "2026-09-21T13:36:09+08:00",
+      "recommendation": "BUY_ONE_LOT",
+      "score": 3
     }
   }
 }

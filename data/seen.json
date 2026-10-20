@@ -1,5 +1,19 @@
 {
   "notified": {
+    "02384": {
+      "list_date": "2026/10/28",
+      "name": "东山精密",
+      "notified_at": "2026-10-20T13:28:04+08:00",
+      "recommendation": "WATCH",
+      "score": 2
+    },
+    "03275": {
+      "list_date": "2026/10/28",
+      "name": "微亿智造",
+      "notified_at": "2026-10-20T13:28:08+08:00",
+      "recommendation": "WATCH",
+      "score": 1
+    },
     "06157": {
       "list_date": "2026/10/23",
       "name": "瘦西湖文旅",

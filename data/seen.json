@@ -1,12 +1,5 @@
 {
   "notified": {
-    "00054": {
-      "list_date": "2026/11/09",
-      "name": "和美药业─B",
-      "notified_at": "2026-10-30T14:34:47+08:00",
-      "recommendation": "BUY_ONE_LOT",
-      "score": 3
-    },
     "01821": {
       "list_date": "2026/11/26",
       "name": "中旅港澳",
@@ -34,6 +27,13 @@
       "notified_at": "2026-10-30T14:35:37+08:00",
       "recommendation": "BUY_ONE_LOT",
       "score": 5
+    },
+    "06935": {
+      "list_date": "2026/11/13",
+      "name": "国星宇航",
+      "notified_at": "2026-11-05T15:29:06+08:00",
+      "recommendation": "BUY_ONE_LOT",
+      "score": 3
     },
     "07672": {
       "list_date": "2026/11/10",

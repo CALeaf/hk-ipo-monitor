@@ -34,27 +34,6 @@
       "notified_at": "2026-11-05T15:29:06+08:00",
       "recommendation": "BUY_ONE_LOT",
       "score": 3
-    },
-    "07672": {
-      "list_date": "2026/11/10",
-      "name": "芯德半导体",
-      "notified_at": "2026-10-30T14:34:53+08:00",
-      "recommendation": "BUY_ONE_LOT",
-      "score": 5
-    },
-    "09621": {
-      "list_date": "2026/11/09",
-      "name": "远信储能",
-      "notified_at": "2026-11-07T14:40:58+08:00",
-      "recommendation": "WATCH",
-      "score": 2
-    },
-    "09917": {
-      "list_date": "2026/11/10",
-      "name": "登临科技─P",
-      "notified_at": "2026-10-30T14:34:56+08:00",
-      "recommendation": "BUY_ONE_LOT",
-      "score": 3
     }
   }
 }

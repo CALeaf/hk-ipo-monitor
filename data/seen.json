@@ -6,6 +6,13 @@
       "notified_at": "2026-10-30T14:35:39+08:00",
       "recommendation": "WATCH",
       "score": 0
+    },
+    "09941": {
+      "list_date": "2026/11/24",
+      "name": "先通医药─B",
+      "notified_at": "2026-11-16T15:26:22+08:00",
+      "recommendation": "BUY_ONE_LOT",
+      "score": 4
     }
   }
 }

@@ -6,6 +6,20 @@
       "notified_at": "2026-11-23T16:22:16+08:00",
       "recommendation": "WATCH",
       "score": 2
+    },
+    "03364": {
+      "list_date": "2026/12/07",
+      "name": "袁记食品",
+      "notified_at": "2026-11-27T17:12:00+08:00",
+      "recommendation": "WATCH",
+      "score": 0
+    },
+    "03707": {
+      "list_date": "2026/12/07",
+      "name": "贝斯特材",
+      "notified_at": "2026-11-27T17:12:03+08:00",
+      "recommendation": "WATCH",
+      "score": 1
     }
   }
 }
